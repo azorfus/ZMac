@@ -1,0 +1,61 @@
+:$:$:$:
+tell: "Thanks for playing sample story."
+start: loc1
+
+location: loc1 
+{
+	name: "West of House"
+	forward: none
+	objects: {mail_box1}
+	desc: "You are standing in an open field west of a white house, with a boarded front door."
+	indesc: none
+	paths: {north: path1, south: path2}
+	interact: {"mailbox", "mail"}
+}
+
+# each such object has one built in bool variable to be used for status: B = 0 (or) 1
+# extra bools can be requested ???
+object: mail_box1
+{
+	name: "Mail Box"
+	forward: none
+	status: ("Contains a letter", "Empty.")
+	desc: "White mail box"
+	indesc: none
+	carry = no
+	mass = none
+	interact: {"letter"}
+	objects: {letter1}
+}
+
+object: letter1
+{
+	name: "Leaflet"
+	forward: none
+	status: ("Mystery", "Old info.")
+	desc: "Worn out letter."
+	indesc: "The letter reads: holy moly geesuz!"
+	interact: {"read", "drop"}
+	objects: none
+	CF: yes
+	mass = 15
+}
+
+location: path1
+{
+	name: "Northern Trail."
+	forward: none
+	objects: none
+	desc: "A path leads to the south to the white house, a frail path leads to the east."
+	indesc: none
+	paths: {south: loc1, east: path3}
+}
+
+# the above should be equivalent to:
+
+location: path1
+{
+	name: "Northern Trail."
+	desc: "A path leads to the south to the white house, a frail path leads to the east."
+	paths: {south: loc1, east: path3}
+}

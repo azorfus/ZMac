@@ -14,12 +14,19 @@ toktype return_toktype(const char value)
 	else if(isdigit(value)) return tok_intlit;
 	else if(value == '$') return tok_dollar;
 	else if(value == ',') return tok_comma;
-	else if(value == ' ' || value == '\n' || value == '\t') return tok_whsp;
+	else if(value == ' ') return tok_whsp_s;
+	else if(value == '\t') return tok_whsp_t;
+	else if(value == '\n') return tok_whsp_n;
+	else if(value == '\0') return tok_EOF;
 }
 
 void next_token(std::string* file, unsigned int* current_index, token* current_token, bool* R)
 {
+	bool ragain = false;
+	while(!ragain)
+	{
 	toktype ret_type = return_toktype((*file)[*current_index]);
+	ragain = false;
 	if(ret_type == tok_alpha)
 	{
 		std::string value = "";
@@ -126,17 +133,28 @@ void next_token(std::string* file, unsigned int* current_index, token* current_t
 		current_token->type = tok_comma;
 		*current_index = *current_index + 1;
 	}
-	else if(ret_type == tok_whsp)
+	else if(ret_type == tok_whsp_s)
 	{
-		current_token->value = " ";
-		current_token->type = tok_whsp;
 		*current_index = *current_index + 1;
+		ragain = true;
+	}
+	else if(ret_type == tok_whsp_t)
+	{
+		*current_index = *current_index + 1;
+		ragain = true;
+	}
+	else if(ret_type == tok_whsp_n)
+	{
+		current_token->line_number = current_token->line_number + 1;
+		*current_index = *current_index + 1;
+		ragain = true;
 	}
 	else
 	{
 		printf("\n[STORY FILE ERROR] Unexpected token value: %c, Does not exist in grammar.\n\n",
 			   (*file)[*current_index]);
 		*R = false;
+	}
 	}
 
 }
@@ -151,8 +169,35 @@ void show_error(ErrorType err, token* current_token)
 	}
 }
 
-void parse_string(std::string* file, unsigned int*)
+std::string parse_string(std::string* file, unsigned int* current_index)
 {
+	std::string value;
+	token current_token;
+	bool running = true;
+	bool lever = false;
+	while(*current_index < file->length() && running)
+	{
+		next_token(file, current_index, &current_token, &running);
+		if(current_token.type == tok_quote)
+		{
+			if(lever)
+			{
+				value.append(current_token.value);
+				lever = false;
+			}
+			else
+			{
+				*current_index = *current_index + 1;
+				break;
+			}
+		}
+		else if(current_token.type == tok_backsl)
+		{
+			lever = true;
+		}
+		else value.append(current_token.value);
+	}
+	return value;
 }
 
 void parse(std::vector <location>* loc_stack, std::vector <object>* obj_stack,
@@ -167,7 +212,6 @@ void parse(std::vector <location>* loc_stack, std::vector <object>* obj_stack,
 	while(current_index <= file->length() && running == true)
 	{
 		next_token(file, &current_index, &current_token, &running);
-		if(current_token.type == tok_whsp) next_token(file, &current_index, &current_token, &running);
 		if(current_token.type == tok_iden)
 		{
 			show_error(IdenNotDefined, &current_token);
@@ -176,20 +220,18 @@ void parse(std::vector <location>* loc_stack, std::vector <object>* obj_stack,
 		else if(current_token.type == tok_tell)
 		{
 			next_token(file, &current_index, &current_token, &running);
-			if(current_token.type == tok_whsp) next_token(file, &current_index, &current_token, &running);
 			if(current_token.type != tok_colon)
 			{
 				show_error(ExpectedColon, &current_token);
 				break;
 			}
 			next_token(file, &current_index, &current_token, &running);
-			if(current_token.type == tok_whsp) next_token(file, &current_index, &current_token, &running);
 			if(current_token.type != tok_quote)
 			{
 				show_error(ExpectedQuote, &current_token);
 				break;
 			}
-			// call parse_string here.
+			std::cout << parse_string(file, &current_index) << std::endl;
 		}
 	}
 }

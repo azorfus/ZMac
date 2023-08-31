@@ -23,8 +23,10 @@ typedef enum toktype
 	tok_mass, tok_synonym,
 	tok_article, tok_tell,
 	tok_alpha, tok_int,
-	tok_whsp, tok_comma,
-	tok_start, tok_backsl
+	tok_whsp_s, tok_whsp_t,
+	tok_comma, tok_whsp_n,
+	tok_start, tok_backsl,
+	tok_EOF
 } toktype;
 
 typedef enum ErrorType

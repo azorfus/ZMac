@@ -68,14 +68,35 @@ typedef struct object
 	
 } object;
 
-// Lexer 
-toktype return_toktype(const char);
-void next_token(std::string* file, unsigned int*, token*, bool*);
-
 // Parser
+
+class Parser
+{
+	public:
+		std::string value;
+		std::string file;
+		token current_token;
+		int line_number;
+		unsigned int current_index;
+
+		std::vector <token> tokens;
+
+		std::vector <location> loc_stack;
+		std::vector <object> obj_stack;
+
+		bool running = true;
+		bool lever = false;
+
+		Parser(std::string gfile);
+
+	private:
+		void lex();
+		std::string parse_string();
+		void show_error(ErrorType err, token current_token);
+		toktype return_toktype(const char);
+}
+
 void parse(std::vector <location>* loc_stack, std::vector <object>* obj_stack,
 		   std::string* file);
-std::string parse_string(std::string* file, unsigned int*);
-void show_error(ErrorType err, token* current_token);
 
 #endif

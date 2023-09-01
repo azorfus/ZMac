@@ -15,6 +15,7 @@ location: loc1
 
 # each such object has one built in bool variable to be used for status: B = 0 (or) 1
 # extra bools can be requested ???
+
 object: mail_box1
 {
 	name: "Mail Box"

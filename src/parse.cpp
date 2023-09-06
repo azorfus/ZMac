@@ -308,7 +308,53 @@ var Parser::parse_assign()
 	return current;
 }
 
+strct parse_struct()
+{
+	consume();
+	strct current;
+	consume();
+	if(current_token.type != tok_iden)
+	{
+		show_error(ExpectedIden);
+		return NULL;
+	}
+	current.name = current_token;
+	consume();
+	if(current_token.type != tok_lcurly)
+	{
+		show_error(ExpectedLcurly);
+		return NULL;
+	}
+	consume();
+	while(current_token.type != tok_rcurly)
+	{
+		if(current_token.type == tok_str || current_token.type == tok_int)
+		{
+			relnode current_in = parse_assign();
+			if(current == NULL) return NULL;
+			current.vars.push_back(current_in);
+		}
+		else if(current_token.type == tok_comma)
+		{
+			consume();
+		}
+		else
+		{
+			show_error(ExpectedDecln | ExpectedComma);
+			return NULL;
+		}
+	}
+}
 
+relnode parse_reln()
+{
+	/*
+		Lets conceal the mathematics, like +, -, *, /
+		Develop a separate expr parser and return the final value.
+		Expression evaluation can be done at once in one place.
+		All we'll need is a final value.
+	*/
+}
 
 Parser::Parser(std::string gfile) : file(gfile)
 {
@@ -341,7 +387,7 @@ Parser::Parser(std::string gfile) : file(gfile)
 			}
 			start_loc = current_token.value;
 		}
-		else if(current_token.type == tok_str)
+		else if(current_token.type == tok_str || current_token.type == tok_int)
 		{
 			relnode current = parse_assign();
 			if(current == NULL) break;

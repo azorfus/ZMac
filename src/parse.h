@@ -120,12 +120,13 @@ class Parser
 		
 		std::string parse_string();
 		relnode parse_tell();
+		relnode parse_goto();
 		relnode parse_get();
 		relnode parse_reln();
 
 		var parse_assign();
 		strct parse_struct();
-
+		ifnode parse_if();
 }
 
 #endif

@@ -352,7 +352,7 @@ relnode parse_reln()
 		Lets conceal the mathematics, like +, -, *, /
 		Develop a separate expr parser and return the final value.
 		Expression evaluation can be done at once in one place.
-		All we'll need is a final value.
+		All we'll need is a final value for mathematical expressions.
 	*/
 }
 

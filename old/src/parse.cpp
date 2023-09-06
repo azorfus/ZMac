@@ -4,13 +4,8 @@
 toktype Parser::return_toktype(const char value)
 {
 	if(value == ':') return tok_colon;
-	else if(value == '>') return tok_greater;
-	else if(value == '<') return tok_lesser;
-	else if(value == '=') return tok_equal;
 	else if(value == '{') return tok_lcurly;
 	else if(value == '}') return tok_rcurly;
-	else if(value == '[') return tok_lsquare;
-	else if(value == ']') return tok_rsquare;
 	else if(value == '\"') return tok_quote;
 	else if(value == '\\') return tok_backsl;
 	else if(value == '(') return tok_lbrack;
@@ -48,12 +43,21 @@ void Parser::lex()
 				}
 			}
 			
-			if(value == "end") current_token.type = tok_end;
-			else if(value == "goto") current_token.type = tok_goto;
-			else if(value == "str") current_token.type = tok_str;
-			else if(value == "struct") current_token.type = tok_struct;
-			else if(value == "menu") current_token.type = tok_menu;
-			else if(value == "get") current_token.type = tok_get;
+			if(value == "name") current_token.type = tok_name;
+			else if(value == "forward") current_token.type = tok_forward;
+			else if(value == "objects") current_token.type = tok_objects;
+			else if(value == "desc") current_token.type = tok_desc;
+			else if(value == "indesc") current_token.type = tok_indesc;
+			else if(value == "paths") current_token.type = tok_paths;
+			else if(value == "interact") current_token.type = tok_interact;
+			else if(value == "location") current_token.type = tok_location;
+			else if(value == "object") current_token.type = tok_object;
+			else if(value == "synonym") current_token.type = tok_synonym;
+			else if(value == "CF") current_token.type = tok_cf;
+			else if(value == "ZF") current_token.type = tok_zf;
+			else if(value == "SF") current_token.type = tok_sf;
+			else if(value == "article") current_token.type = tok_article;
+			else if(value == "mass") current_token.type = tok_mass;
 			else if(value == "tell") current_token.type = tok_tell;
 			else if(value == "none") current_token.type = tok_none;
 			else if(value == "start") current_token.type = tok_start;
@@ -85,32 +89,10 @@ void Parser::lex()
 			current_index = current_index + 1;
 			tokens.push_back(current_token);
 		}
-		else if(ret_type == tok_equal)
-		{
-			current_token.value = "=";
-			current_token.type = tok_equal;
-			current_index = current_index + 1;
-			tokens.push_back(current_token);
-		}
-
 		else if(ret_type == tok_rcurly)
 		{
 			current_token.value = "}";
 			current_token.type = tok_rcurly;
-			current_index = current_index + 1;
-			tokens.push_back(current_token);
-		}
-		else if(ret_type == tok_lsquare)
-		{
-			current_token.value = "[";
-			current_token.type = tok_lsquare;
-			current_index = current_index + 1;
-			tokens.push_back(current_token);
-		}
-		else if(ret_type == tok_rsquare)
-		{
-			current_token.value = "]";
-			current_token.type = tok_rsquare;
 			current_index = current_index + 1;
 			tokens.push_back(current_token);
 		}
@@ -231,83 +213,6 @@ void Parser::consume()
 	if(current_index <= tokens.size()) current_token = tokens[current_index];
 }
 
-relnode Parser::parse_tell()
-{
-	relnode current;
-	current.left = current_token;
-	consume();
-	if(current_token.type != tok_colon)
-	{
-		show_error(ExpectedColon);
-		return NULL;
-	}
-	current.op = current_token;
-	consume();
-	if(current_node.type != tok_strlit)
-	{
-		show_error(ExpectedStrLit);
-		return NULL;
-	}
-	current.right = current_token;
-	consume();
-	return current;
-}
-
-var Parser::parse_assign()
-{
-	var current;
-	if(current_token.type == tok_str)
-	{
-		current.type = 1;
-		consume();
-		if(current_token.type != tok_iden)
-		{
-			show_error(ExpectedIden);
-			return NULL;
-		}
-		current.name = current_token;
-		consume();
-		if(current_token.type != tok_equal)
-		{
-			show_error(ExpectedAssignment);
-			return NULL;
-		}
-		consume();
-		if(current_token.type != tok_strlit)
-		{
-			show_error(ExpectedStrLit);
-			return NULL;
-		}
-		current.sval = current_token;
-	}
-	else if(current_token.type == tok_int)
-	{
-		current.type = 0;
-		consume();
-		if(current_token.type != tok_iden)
-		{
-			show_error(ExpectedIden);
-			return NULL;
-		}
-		current.name = current_token;
-		consume();
-		if(current_token.type != tok_equal)
-		{
-			show_error(ExpectedAssignment);
-			return NULL;
-		}
-		consume();
-		if(current_token.type != tok_intlit)
-		{
-			show_error(ExpectedStrLit);
-			return NULL;
-		}
-		current.val = current_token;
-	}
-	consume();
-	return current;
-}
-
 Parser::Parser(std::string gfile) : file(gfile)
 {
 	lex();
@@ -316,12 +221,12 @@ Parser::Parser(std::string gfile) : file(gfile)
 		current_token = tokens[current_index];
 		if(current_token.type == tok_iden)
 		{
-			show_error(IdenNotDefined);
+			show_error(IdenNotDefined, current_token);
 			break;
 		}
 		else if(current_token.type == tok_tell)
 		{
-			show_error(TellOutNarrative);
+			
 		}
 		else if(current_token.type == tok_start)
 		{
@@ -339,13 +244,9 @@ Parser::Parser(std::string gfile) : file(gfile)
 			}
 			start_loc = current_token.value;
 		}
-		else if(current_token.type == tok_str)
+		else if(current_token.type == tok_object)
 		{
-			relnode current = parse_assign();
-			if(current == NULL) break;
-			vars.push_back(current);
 		}
-
 		current_index = current_index + 1;
 	}
 }

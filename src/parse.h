@@ -9,25 +9,29 @@
 
 typedef enum toktype
 {
-	tok_iden, tok_name,
-	tok_forward, tok_objects,
-	tok_desc, tok_indesc,
-	tok_paths, tok_interact,
-	tok_location, tok_object,
+	tok_greater, tok_lesser,
+	tok_equal, tok_equiv,
+	tok_goto, tok_end,
+	tok_str, tok_menu,
+	tok_get, tok_struct,
+	tok_lsquare, tok_rsquare,
 	tok_lcurly, tok_rcurly,
 	tok_lbrack, tok_rbrack,
 	tok_quote, tok_dollar,
+	tok_strlit,
 	tok_none, tok_intlit,
-	tok_colon, tok_cf,
-	tok_sf, tok_zf,
-	tok_mass, tok_synonym,
-	tok_article, tok_tell,
+	tok_colon, tok_tell,
 	tok_alpha, tok_int,
 	tok_whsp_s, tok_whsp_t,
 	tok_comma, tok_whsp_n,
 	tok_start, tok_backsl,
-	tok_EOF
+	tok_end, tok_EOF
 } toktype;
+
+typedef enum node_type
+{
+	node_tell, node_get
+} node_type;
 
 typedef enum ErrorType
 {
@@ -35,38 +39,56 @@ typedef enum ErrorType
 	ExpectedColon, ExpectedQuote
 } ErrorType;
 
-typedef struct token
+struct token
 {
 	std::string value;
 	toktype type;
 	unsigned int line_number;
-} token;
+};
 
-typedef struct location
+struct relnode
 {
-	std::string name;
-	bool forward;
-	bool CF, SF, ZF;
-	std::string desc;
-	std::string indesc;
-	std::vector <std::string> paths;
-	bool path_dir[10];
-	std::vector <std::string> interact;
-} location;
+	token left;
+	token op;
 
-typedef struct object
+	bool end;
+	token right;
+	relnode nright;
+};
+
+struct ifnode
 {
-	std::string name;
-	bool forward;
-	bool CF, SF, ZF;
-	std::string desc;
-	std::string indesc;
-	std::vector <std::string> status;
-	std::vector <std::string> interact;
-	std::vector <std::string> objects;
-	int mass;
-	
-} object;
+	std::vector <relnode> conditions;
+	std::vector <relnode> nodes;
+	std::vector <ifnode> ifnodes;
+};
+
+struct var
+{
+	int type;
+	token name;
+	token val;
+}
+
+struct strct
+{
+	token name;
+	std::vector <var> vars;
+};
+
+struct mitems
+{
+	std::vector <relnode> nodes;
+	std::vector <ifnode> ifnodes;
+};
+
+struct narr
+{
+	std::vector <relnode> nodes;
+	std::vector <mitems> menu;
+	std::vector <token> excess;
+	std::vector <ifnode> ifnodes;
+};
 
 // Parser
 
@@ -75,28 +97,35 @@ class Parser
 	public:
 		std::string value;
 		std::string file;
+		std::string start;
 		token current_token;
 		int line_number;
 		unsigned int current_index;
 
 		std::vector <token> tokens;
-
-		std::vector <location> loc_stack;
-		std::vector <object> obj_stack;
+		std::vector <narr> locs;
+		std::vector <strct> structs;
+		std::vector <var> vars;
 
 		bool running = true;
 		bool lever = false;
 
-		Parser(std::string gfile);
+		Parser(std::string);
 
 	private:
 		void lex();
-		std::string parse_string();
-		void show_error(ErrorType err, token current_token);
+		void show_error(ErrorType err);
+		void consume();
 		toktype return_toktype(const char);
-}
+		
+		std::string parse_string();
+		relnode parse_tell();
+		relnode parse_get();
+		relnode parse_reln();
 
-void parse(std::vector <location>* loc_stack, std::vector <object>* obj_stack,
-		   std::string* file);
+		var parse_assign();
+		strct parse_struct();
+
+}
 
 #endif

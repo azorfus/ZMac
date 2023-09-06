@@ -1,0 +1,2 @@
+write lexer so that lko2352 is a valid identifier.
+make it all work with classes.

@@ -130,11 +130,12 @@ class Parser
 		
 		struct node
 		{
-			node left;
+			node *left;
 			std::string op;
-			node right;
+			node *right;
 			std::string value;
-		}
+		};
+
 		node parse_expr();
 		node parse_term();
 		node parse_factor();

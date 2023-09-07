@@ -200,7 +200,7 @@ Parser::node Parser::parse_expr()
 {
 	node vnode = parse_term();
 
-	while(etokens && (etokens[0].type == tok_plus || etokens[0].type == tok_minus))
+	while(!etokens.empty() && (etokens[0].type == tok_plus || etokens[0].type == tok_minus))
 	{
 		char op = etokens.pop_front().value;
 		node vnode_right = parse_term();
@@ -218,7 +218,7 @@ Parser::node Parser::parse_term()
 {
 	node vnode = parse_factor();
 	
-	while(etokens && (etokens[0].type == tok_mul || etokens[0].type == tok_div))
+	while(!etokens.empty() && (etokens[0].type == tok_mul || etokens[0].type == tok_div))
 	{
 		char op = etokens.pop_front().value;
 		node vnode_right = parse_factor();

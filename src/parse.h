@@ -127,6 +127,19 @@ class Parser
 		var parse_assign();
 		strct parse_struct();
 		ifnode parse_if();
+		
+		struct node
+		{
+			node left;
+			std::string op;
+			node right;
+			std::string value;
+		}
+		node parse_expr();
+		node parse_term();
+		node parse_factor();
+		int evaluate_expr();
+
 }
 
 #endif

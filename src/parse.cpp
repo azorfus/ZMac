@@ -196,6 +196,78 @@ void Parser::show_error(ErrorType err)
 	}
 }
 
+Parser::node Parser::parse_expr()
+{
+	node vnode = parse_term();
+
+	while(etokens && (etokens[0].type == tok_plus || etokens[0].type == tok_minus))
+	{
+		char op = etokens.pop_front().value;
+		node vnode_right = parse_term();
+		node new_vnode;
+		new_vnode.op = std::string(op);
+		new_vnode.left = vnode;
+		new_vnode.right = vnode_right();
+		vnode = new_vnode()
+	}
+
+	return vnode;
+}
+
+Parser::node Parser::parse_term()
+{
+	node vnode = parse_factor();
+	
+	while(etokens && (etokens[0].type == tok_mul || etokens[0].type == tok_div))
+	{
+		char op = etokens.pop_front().value;
+		node vnode_right = parse_factor();
+		node new_vnode;
+		new_vnode.op = std::string(op);
+		new_vnode.left = vnode;
+		new_vnode.right = vnode_right;
+		vnode = new_vnode;
+	}
+
+	return vnode;
+}
+
+Parser::node Parser::parse_factor()
+{
+	token vtoken = tokens.pop_front();
+	node vnode;
+
+	if(vtoken.type == tok_lcurly)
+	{
+		vnode = parse_expr();
+		tokens.pop_front();
+		return vnode;
+	}
+	
+	vnode.value = vtoken.value();
+	return vnode;
+}
+
+int Parser::evaluate_expr(n)
+{
+	if(n == NULL) return NULL;
+	if(n.value != NULL && isdigit(n.value.c_str())) return stoi(n.value);
+
+	int left_value = evaluate_expr(n.left);
+	int right_value = evaluate_expr(n.right);
+
+	if(right_value == 0 && n.op == '/')
+	{
+		show_error(DivisonByZero);
+		return NULL;
+	}
+
+	if(n.op == '+') return left_value + right_value;
+	else if(n.op == '-') return left_value - right_value;
+	else if(n.op == '*') return left_value * right_value;
+	else if(n.op == '/' || right_value != 0) return left_value / right_value;
+}
+
 std::string Parser::parse_string()
 {
 	std::string value;
